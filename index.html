@@ -224,6 +224,196 @@
         window.onload = render;
     </script>
 </body>
+</html>        .search-box {
+            background: var(--panel); border: 1px solid var(--border);
+            padding: 8px 15px; border-radius: 12px; width: 300px;
+            display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px);
+        }
+        .search-box input { background: transparent; border: none; color: white; width: 100%; font-size: 0.85rem; }
+
+        .status-bar {
+            display: flex; gap: 20px; background: rgba(255,255,255,0.02);
+            padding: 8px 20px; border-radius: 12px; margin-bottom: 25px;
+            border: 1px solid var(--border); font-size: 0.75rem; color: #888;
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
+
+        .card {
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 18px; padding: 18px; transition: 0.3s;
+            position: relative; display: flex; flex-direction: column;
+        }
+        .card:hover { border-color: var(--primary); transform: translateY(-3px); }
+
+        .tag { font-size: 0.6rem; font-weight: 800; color: var(--secondary); margin-bottom: 5px; text-transform: uppercase; }
+        .card h3 { font-size: 1rem; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .code-pre {
+            background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+            color: #666; border: 1px solid rgba(255,255,255,0.02);
+            margin-bottom: 15px; overflow: hidden;
+        }
+
+        .btn-row { display: grid; grid-template-columns: 1fr 40px; gap: 6px; }
+        .btn-row.with-del { grid-template-columns: 1fr 40px 40px; }
+
+        .btn {
+            padding: 8px; border-radius: 8px; border: none; cursor: pointer;
+            font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .btn-copy { background: var(--primary); color: #000; }
+        .btn-sec { background: rgba(255,255,255,0.05); color: #fff; }
+        .btn-del { background: rgba(255, 70, 70, 0.1); color: var(--danger); }
+
+        .fab { position: fixed; bottom: 25px; right: 25px; width: 50px; height: 50px; background: var(--primary); border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 200; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { background: #0a0a0f; width: 100%; max-width: 400px; padding: 25px; border-radius: 20px; border: 1px solid var(--border); }
+        input, textarea { width: 100%; padding: 12px; background: #161620; border: 1px solid var(--border); border-radius: 10px; color: #fff; margin-bottom: 10px; }
+
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 8px 20px; border-radius: 50px; font-weight: 800; display: none; z-index: 2000; }
+
+        @media (max-width: 600px) { aside { width: 55px; } main { margin-left: 55px; width: calc(100% - 55px); padding: 15px; } .search-box { width: 100%; } }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="nav-item active"><i data-lucide="grid" size="20"></i></div>
+        <div class="nav-item" onclick="exportDB()"><i data-lucide="download" size="20"></i></div>
+        <div style="margin-top: auto;" class="nav-item"><i data-lucide="shield-check" color="var(--primary)" size="20"></i></div>
+    </aside>
+
+    <main>
+        <header>
+            <div class="logo">SPACE<span>CODE</span></div>
+            <div class="search-box">
+                <i data-lucide="search" size="14"></i>
+                <input type="text" id="searchInput" placeholder="Buscar scripts..." onkeyup="render()">
+            </div>
+        </header>
+
+        <div class="status-bar">
+            <span>SCRIPTS TOTAIS: <b id="totalCount">0</b></span>
+            <span style="margin-left:auto">STATUS: <b style="color:var(--accent)">ONLINE</b></span>
+        </div>
+
+        <div class="grid" id="mainGrid"></div>
+    </main>
+
+    <div class="fab" onclick="toggleModal(true)"><i data-lucide="plus" color="#000" size="24"></i></div>
+    <div id="toast">Copiado!</div>
+
+    <div class="modal" id="modal">
+        <div class="modal-box">
+            <h4 style="margin-bottom:15px">Adicionar Script Local</h4>
+            <input type="text" id="in-title" placeholder="Nome do Script">
+            <input type="text" id="in-game" placeholder="Link do Jogo">
+            <textarea id="in-code" rows="4" placeholder="Código LUA"></textarea>
+            <button class="btn btn-copy" style="width:100%; padding:12px" onclick="handleSave()">SALVAR NO MEU NAVEGADOR</button>
+            <button class="btn" style="width:100%; margin-top:8px; background:none; color:#555" onclick="toggleModal(false)">FECHAR</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // COLOQUE SEUS SCRIPTS OFICIAIS AQUI EM BAIXO
+        // Eles não podem ser deletados pelos usuários
+        // ==========================================
+        const DATABASE_FIXO = [
+            { 
+                id: 'fixo_1', 
+                title: "Blox Fruits AutoFarm", 
+                game: "https://www.roblox.com/games/2788229376", 
+                code: "loadstring(game:HttpGet('https://raw.githubusercontent.com/Exemplo/Script'))()", 
+                verified: true,
+                isFixo: true 
+            },
+            { 
+                id: 'fixo_2', 
+                title: "Universal Fly Hack", 
+                game: "", 
+                code: "loadstring(game:HttpGet('https://raw.githubusercontent.com/Exemplo/Fly'))()", 
+                verified: true,
+                isFixo: true 
+            }
+        ];
+
+        let storageLocal = JSON.parse(localStorage.getItem('space_local_v13')) || [];
+
+        function toggleModal(s) { document.getElementById('modal').style.display = s ? 'flex' : 'none'; }
+
+        function render() {
+            const grid = document.getElementById('mainGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Unir os fixos com os que o usuário criou
+            const allScripts = [...DATABASE_FIXO, ...storageLocal];
+            const filtered = allScripts.filter(s => s.title.toLowerCase().includes(search));
+
+            document.getElementById('totalCount').innerText = allScripts.length;
+
+            grid.innerHTML = filtered.map(s => `
+                <div class="card">
+                    <span class="tag" style="color:${s.isFixo ? 'var(--primary)' : 'var(--secondary)'}">
+                        ${s.isFixo ? 'OFICIAL • VERIFICADO' : 'USUÁRIO • LOCAL'}
+                    </span>
+                    <h3>${s.title}</h3>
+                    <div class="code-pre"><code>${s.code.substring(0, 40)}...</code></div>
+                    
+                    <div class="btn-row ${!s.isFixo ? 'with-del' : ''}">
+                        <button class="btn btn-copy" onclick="copyCode('${encodeURIComponent(s.code)}')">COPIAR</button>
+                        <button class="btn btn-sec" onclick="window.open('${s.game || '#'}', '_blank')"><i data-lucide="external-link" size="14"></i></button>
+                        ${!s.isFixo ? `<button class="btn btn-del" onclick="remove(${s.id})"><i data-lucide="trash-2" size="14"></i></button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function handleSave() {
+            const t = document.getElementById('in-title').value;
+            const g = document.getElementById('in-game').value;
+            const c = document.getElementById('in-code').value;
+            if(!t || !c) return;
+
+            storageLocal.unshift({ id: Date.now(), title: t, game: g, code: c, verified: false, isFixo: false });
+            localStorage.setItem('space_local_v13', JSON.stringify(storageLocal));
+            toggleModal(false);
+            render();
+            showToast('SALVO!');
+        }
+
+        function remove(id) {
+            storageLocal = storageLocal.filter(s => s.id !== id);
+            localStorage.setItem('space_local_v13', JSON.stringify(storageLocal));
+            render();
+        }
+
+        function copyCode(enc) {
+            navigator.clipboard.writeText(decodeURIComponent(enc));
+            showToast('COPIADO!');
+        }
+
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            t.innerText = m; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2000);
+        }
+
+        function exportDB() {
+            const blob = new Blob([JSON.stringify(storageLocal)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'meus_scripts_local.json';
+            a.click();
+        }
+
+        window.onload = render;
+    </script>
+</body>
             </html>        /* MAIN AREA */
         main { flex: 1; margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); padding: 20px 30px; }
 
